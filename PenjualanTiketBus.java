@@ -12,7 +12,7 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
     private String generateKodeTiket() {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder kodeTiket = new StringBuilder();
-        int length = 6; // Panjang kode tiket
+        int length = 7; // Panjang kode tiket
         
         // Menghasilkan karakter acak dari chars dan membangun kode tiket
         for (int i = 0; i < length; i++) {
@@ -65,7 +65,7 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
-        setPreferredSize(new java.awt.Dimension(600, 350));
+        setPreferredSize(new java.awt.Dimension(600, 550));
 
         jLabel26.setFont(new java.awt.Font("Century", 0, 24)); // NOI18N
         jLabel26.setText("Penjualan Tiket Bus");
