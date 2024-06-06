@@ -8,7 +8,7 @@ public class ProjectTiketBus {
         JFrame frame = new JFrame("Program Pembelian Tiket Bus");
         
         // Membuat instance panel penjualan tiket bus
-        PenjualanTiketBus panel = new PenjualanTiketBus();
+        login panel = new login();
         
         // Menambahkan panel ke frame
         frame.getContentPane().add(panel);

@@ -1,8 +1,9 @@
 package projecttiketbus;
 
-import java.awt.event.ActionEvent;
 import javax.swing.*;
+import java.awt.event.*;
 import java.util.*;
+import java.sql.*;
 
 public class PenjualanTiketBus extends javax.swing.JPanel {
     // Deklarasi objek Random
@@ -12,21 +13,46 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
     private String generateKodeTiket() {
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder kodeTiket = new StringBuilder();
-        int length = 7; // Panjang kode tiket
+        int length = 6; // Panjang kode tiket
         
-        // Menghasilkan karakter acak dari chars dan membangun kode tiket
+        // Menghasilkan karakter acak untuk membuat kode tiket
         for (int i = 0; i < length; i++) {
             kodeTiket.append(chars.charAt(random.nextInt(chars.length())));
         }
-        
         return kodeTiket.toString();
     }
     
     public PenjualanTiketBus() {
-        initComponents();
+        initComponents(); 
     }
-
     
+    //database connection
+    static final String URL = "jdbc:mysql://localhost:3306/login";
+    static final String USER = "root";
+    static final String PASSWORD = "";
+
+    private int getHarga(String selectedJurusan, String selectedJenis) {
+        String sql = "SELECT harga FROM bus_prices WHERE tujuan = ? AND jenis = ?"; //mengambil data dari tabel pada database
+        int harga = 0;
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, selectedJurusan);
+            pstmt.setString(2, selectedJenis);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                harga = rs.getInt("harga");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return harga;
+    }
+    
+    private boolean showWarning = true;
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -47,6 +73,7 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
         jumbel = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         txt_harga = new javax.swing.JTextField();
+        inputjumbel = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
         kembalian = new javax.swing.JTextField();
         txt_bayar = new javax.swing.JTextField();
@@ -56,20 +83,23 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
         jLabel9 = new javax.swing.JLabel();
         btn_bayar = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
-        nomor = new javax.swing.JTextField();
         nama = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        nomor = new javax.swing.JComboBox<>();
         jScrollPane1 = new javax.swing.JScrollPane();
         txt_output = new javax.swing.JTextArea();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        inputlagi = new javax.swing.JButton();
+        btnexit = new javax.swing.JButton();
 
-        setPreferredSize(new java.awt.Dimension(600, 550));
+        setPreferredSize(new java.awt.Dimension(600, 350));
+
+        jPanel14.setBackground(new java.awt.Color(157, 163, 255));
 
         jLabel26.setFont(new java.awt.Font("Century", 0, 24)); // NOI18N
         jLabel26.setText("Penjualan Tiket Bus");
 
+        jPanel13.setBackground(new java.awt.Color(157, 163, 255));
         jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder("Data Bus\n"));
 
         jenis.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Pilih Jenis", "Ekonomi", "VIP" }));
@@ -79,7 +109,12 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
             }
         });
 
-        jurusan.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Pilih Jurusan", "Jakarta", "Bandung", "Semarang", "Yogyakarta", "Surabaya" }));
+        jurusan.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Pilih Jurusan", "Bandung", "Semarang", "Yogyakarta", "Surabaya" }));
+        jurusan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jurusanActionPerformed(evt);
+            }
+        });
 
         jLabel1.setText("Jurusan");
 
@@ -101,6 +136,13 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
             }
         });
 
+        inputjumbel.setText("Input");
+        inputjumbel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                inputjumbelActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
         jPanel13.setLayout(jPanel13Layout);
         jPanel13Layout.setHorizontalGroup(
@@ -108,17 +150,20 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
             .addGroup(jPanel13Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2)
-                    .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jLabel3)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jurusan, javax.swing.GroupLayout.Alignment.TRAILING, 0, 141, Short.MAX_VALUE)
-                    .addComponent(jenis, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(txt_harga, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jumbel, javax.swing.GroupLayout.Alignment.TRAILING))
+                    .addGroup(jPanel13Layout.createSequentialGroup()
+                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2)
+                            .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addComponent(jLabel3)))
+                        .addGap(12, 12, 12)
+                        .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jenis, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(txt_harga, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jumbel)
+                            .addComponent(jurusan, 0, 135, Short.MAX_VALUE)))
+                    .addComponent(inputjumbel, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
         jPanel13Layout.setVerticalGroup(
@@ -134,18 +179,21 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
                     .addComponent(jLabel2))
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel13Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGap(19, 19, 19)
                         .addComponent(jLabel3))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel13Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
+                        .addGap(13, 13, 13)
                         .addComponent(txt_harga, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jumbel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
+                .addGap(11, 11, 11)
+                .addComponent(inputjumbel)
                 .addContainerGap())
         );
 
+        jPanel6.setBackground(new java.awt.Color(157, 163, 255));
         jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder("Pembayaran\n"));
 
         txt_bayar.addActionListener(new java.awt.event.ActionListener() {
@@ -194,12 +242,13 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
                             .addComponent(kembalian)
                             .addComponent(txt_bayar)))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
-                        .addComponent(jLabel9)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(txt_hargatotal, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(btn_bayar)))
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                                .addComponent(jLabel9)
+                                .addGap(52, 52, 52)
+                                .addComponent(txt_hargatotal, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btn_bayar, javax.swing.GroupLayout.Alignment.TRAILING))))
                 .addContainerGap())
         );
         jPanel6Layout.setVerticalGroup(
@@ -213,20 +262,28 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txt_bayar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                .addGap(10, 10, 10)
                 .addComponent(btn_bayar)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(kembalian, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel8))
                 .addContainerGap())
         );
 
+        jPanel7.setBackground(new java.awt.Color(157, 163, 255));
         jPanel7.setBorder(javax.swing.BorderFactory.createTitledBorder("Detail Pembelian"));
 
         jLabel4.setText("Nomor Kursi");
 
         jLabel5.setText("Nama Penumpang");
+
+        nomor.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Pilih Kursi", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25" }));
+        nomor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nomorActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
         jPanel7.setLayout(jPanel7Layout);
@@ -240,7 +297,7 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(nama, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)
-                    .addComponent(nomor))
+                    .addComponent(nomor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel7Layout.setVerticalGroup(
@@ -248,30 +305,30 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
             .addGroup(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(nomor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jLabel4)
+                    .addComponent(nomor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(12, 12, 12)
                 .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(nama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel5))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel5)
+                    .addComponent(nama, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
 
         txt_output.setColumns(20);
         txt_output.setRows(5);
         jScrollPane1.setViewportView(txt_output);
 
-        jButton1.setText("Input Lagi");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        inputlagi.setText("Input Lagi");
+        inputlagi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                inputlagiActionPerformed(evt);
             }
         });
 
-        jButton2.setText("Exit");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btnexit.setText("Exit");
+        btnexit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnexitActionPerformed(evt);
             }
         });
 
@@ -283,25 +340,25 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane1)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel14Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jLabel26)
-                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(jPanel14Layout.createSequentialGroup()
                         .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel14Layout.createSequentialGroup()
                                 .addComponent(jPanel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGap(18, 18, 18))
                             .addGroup(jPanel14Layout.createSequentialGroup()
-                                .addGap(25, 25, 25)
-                                .addComponent(jButton1)
+                                .addGap(30, 30, 30)
+                                .addComponent(inputlagi)
                                 .addGap(18, 18, 18)
-                                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 38, Short.MAX_VALUE)))
+                                .addComponent(btnexit, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(33, 33, 33)))
                         .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
+                .addGap(161, 161, 161)
+                .addComponent(jLabel26)
+                .addGap(162, 162, 162))
         );
         jPanel14Layout.setVerticalGroup(
             jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -309,18 +366,19 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
                 .addGap(12, 12, 12)
                 .addComponent(jLabel26, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel14Layout.createSequentialGroup()
-                        .addComponent(jPanel13, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(30, 30, 30)
-                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButton1)
-                            .addComponent(jButton2)))
+                .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel14Layout.createSequentialGroup()
                         .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(jPanel14Layout.createSequentialGroup()
+                        .addComponent(jPanel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(inputlagi)
+                            .addComponent(btnexit))
+                        .addGap(17, 17, 17)))
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -338,103 +396,40 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jComboBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBox1ActionPerformed
-        // TODO add your handling code here:
         if (jurusan.getSelectedItem().equals("Pilih Jurusan")) {
-            JOptionPane.showMessageDialog(null, "Pilih jurusan terlebih dahulu!");
-        } else {
-            int hargapertiket = 0;
-            int jumlahtiket   = 0;
-            if (jenis.getSelectedItem().equals("Ekonomi")) {
-                if (jurusan.getSelectedItem().equals("Jakarta")) {
-                    txt_harga.setText("Rp. 200.000");
-                    hargapertiket = 200000;
-                } else if (jurusan.getSelectedItem().equals("Bandung")) {
-                    txt_harga.setText("Rp. 250.000");
-                    hargapertiket = 250000;
-                } else if (jurusan.getSelectedItem().equals("Semarang")) {
-                    txt_harga.setText("Rp. 200.000");
-                    hargapertiket = 200000; 
-                } else if (jurusan.getSelectedItem().equals("Yogyakarta")) {
-                    txt_harga.setText("Rp. 250.000");
-                    hargapertiket = 250000; 
-                } else if (jurusan.getSelectedItem().equals("Surabaya")) {
-                    txt_harga.setText("Rp. 300.000");
-                    hargapertiket = 300000; 
-                }
-            } else if (jenis.getSelectedItem().equals("VIP")) {
-                if (jurusan.getSelectedItem().equals("Jakarta")) {
-                    txt_harga.setText("Rp. 600.000");
-                    hargapertiket = 600000; 
-                } else if (jurusan.getSelectedItem().equals("Bandung")) {
-                    txt_harga.setText("Rp. 550.000");
-                    hargapertiket = 550000; 
-                } else if (jurusan.getSelectedItem().equals("Semarang")) {
-                    txt_harga.setText("Rp. 500.000");
-                    hargapertiket = 550000; 
-                } else if (jurusan.getSelectedItem().equals("Yogyakarta")) {
-                    txt_harga.setText("Rp. 450.000");
-                    hargapertiket = 450000; 
-                } else if (jurusan.getSelectedItem().equals("Surabaya")) {
-                    txt_harga.setText("Rp. 700.000");
-                    hargapertiket = 700000; 
-                }
-            }  
-            
-            int hargatotal = hargapertiket * jumlahtiket;
-            txt_hargatotal.setText(String.format("Rp. %,d", hargatotal));
+            if (showWarning) {
+                JOptionPane.showMessageDialog(null, "Pilih jurusan terlebih dahulu!");
+            }
+    } else {
+        String selectedJurusan = jurusan.getSelectedItem().toString();
+        String selectedJenis = jenis.getSelectedItem().toString();
+        int hargapertiket = getHarga(selectedJurusan, selectedJenis);
+        txt_harga.setText(String.format("Rp. %,d", hargapertiket));
+
+        int jumlahtiket = 0;
+        int hargatotal = hargapertiket * jumlahtiket;
+        txt_hargatotal.setText(String.format("Rp. %,d", hargatotal));
         }
     }//GEN-LAST:event_jComboBox1ActionPerformed
 
     private void jenisActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jenisActionPerformed
-        // TODO add your handling code here:
-        if (jurusan.getSelectedItem().equals("Pilih Jurusan")) {
-            JOptionPane.showMessageDialog(null, "Pilih jurusan terlebih dahulu!");
-        } else {
-            int hargapertiket = 0;
-            int jumlahtiket   = 0;
-            if (jenis.getSelectedItem().equals("Ekonomi")) {
-                if (jurusan.getSelectedItem().equals("Jakarta")) {
-                    txt_harga.setText("Rp. 200.000");
-                    hargapertiket = 200000;
-                } else if (jurusan.getSelectedItem().equals("Bandung")) {
-                    txt_harga.setText("Rp. 250.000");
-                    hargapertiket = 250000;
-                } else if (jurusan.getSelectedItem().equals("Semarang")) {
-                    txt_harga.setText("Rp. 200.000");
-                    hargapertiket = 200000; 
-                } else if (jurusan.getSelectedItem().equals("Yogyakarta")) {
-                    txt_harga.setText("Rp. 250.000");
-                    hargapertiket = 250000; 
-                } else if (jurusan.getSelectedItem().equals("Surabaya")) {
-                    txt_harga.setText("Rp. 300.000");
-                    hargapertiket = 300000; 
+        if (jenis.getSelectedItem().equals("Pilih Jenis")) {
+            if (showWarning) { // Check if warning should be shown
+                JOptionPane.showMessageDialog(null, "Pilih jenis terlebih dahulu!");
                 }
-            } else if (jenis.getSelectedItem().equals("VIP")) {
-                if (jurusan.getSelectedItem().equals("Jakarta")) {
-                    txt_harga.setText("Rp. 600.000");
-                    hargapertiket = 600000; 
-                } else if (jurusan.getSelectedItem().equals("Bandung")) {
-                    txt_harga.setText("Rp. 550.000");
-                    hargapertiket = 550000; 
-                } else if (jurusan.getSelectedItem().equals("Semarang")) {
-                    txt_harga.setText("Rp. 500.000");
-                    hargapertiket = 550000; 
-                } else if (jurusan.getSelectedItem().equals("Yogyakarta")) {
-                    txt_harga.setText("Rp. 450.000");
-                    hargapertiket = 450000; 
-                } else if (jurusan.getSelectedItem().equals("Surabaya")) {
-                    txt_harga.setText("Rp. 700.000");
-                    hargapertiket = 700000; 
-                }
-            }
-            
-            int hargatotal = hargapertiket * jumlahtiket;
-            txt_hargatotal.setText(String.format("Rp. %,d", hargatotal));
+    } else {
+        String selectedJurusan = jurusan.getSelectedItem().toString();
+        String selectedJenis = jenis.getSelectedItem().toString();
+        int hargapertiket = getHarga(selectedJurusan, selectedJenis);
+        txt_harga.setText(String.format("Rp. %,d", hargapertiket));
+
+        int jumlahtiket = 0;
+        int hargatotal = hargapertiket * jumlahtiket;
+        txt_hargatotal.setText(String.format("Rp. %,d", hargatotal));
         }
     }//GEN-LAST:event_jenisActionPerformed
 
     private void jumbelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jumbelActionPerformed
-        // TODO add your handling code here:
         if (!jumbel.getText().isEmpty()) {
         int beli = Integer.parseInt(jumbel.getText()); // Mendapatkan jumlah beli dari input
         int hargaPerTiket = Integer.parseInt(txt_harga.getText().replace("Rp. ", "").replace(".", "")); // Mendapatkan harga per tiket dan menghapus format
@@ -444,24 +439,19 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
     }//GEN-LAST:event_jumbelActionPerformed
 
     private void txt_hargaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_hargaActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_txt_hargaActionPerformed
 
     private void txt_hargatotalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_hargatotalActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_txt_hargatotalActionPerformed
 
     private void txt_bayarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_bayarActionPerformed
-        // TODO add your handling code here:
-        
     }//GEN-LAST:event_txt_bayarActionPerformed
 
     private void btn_bayarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_bayarActionPerformed
-        // TODO add your handling code here:
-        if (nomor.getText().isEmpty() || nama.getText().isEmpty()) {
-        if (nomor.getText().isEmpty() && !nama.getText().isEmpty()) {
+        if (nomor.getSelectedItem() == "Pilih Kursi" || nama.getText().isEmpty()) {
+        if (nomor.getSelectedItem() == "Pilih Kursi" && !nama.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Nomor kursi tidak boleh kosong!", "Error", JOptionPane.ERROR_MESSAGE);
-        } else if (!nomor.getText().isEmpty() && nama.getText().isEmpty()) {
+        } else if (nomor.getSelectedItem() != null && nama.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Nama penumpang tidak boleh kosong!", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this, "Nomor kursi dan nama penumpang tidak boleh kosong!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -475,13 +465,13 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
         int bayar = Integer.parseInt(txt_bayar.getText().replace(",", ""));
         int kembali = bayar - hargaTotal;
 
-        // Display the change (kembalian)
+        // Menampilkan Kembalian
         kembalian.setText(String.format("Rp. %,d", kembali));
         }
         txt_bayar.setText(String.format("Rp. %s", txt_bayar.getText()));
 
         // Ambil semua informasi yang relevan
-        String nomorKursi = nomor.getText();
+        String nomorKursi = nomor.getSelectedItem().toString();
         String namaPenumpang = nama.getText();
         String jenisBus = jenis.getSelectedItem().toString();
         String jurusanBus = jurusan.getSelectedItem().toString();
@@ -494,56 +484,74 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
         String kodeTiket = generateKodeTiket();
 
         // Format informasi menjadi invoice
-        String invoice = "==================================== INVOICE ====================================\n" +
-                     " Kode Tiket\t\t: "    + kodeTiket     + "\n" +
-                     " Nomor Kursi\t\t: "   + nomorKursi    + "\n" +
-                     " Nama Penumpang\t: "  + namaPenumpang + "\n" +
-                     " Jenis Bus\t\t: "     + jenisBus      + "\n" +
-                     " Jurusan\t\t: "       + jurusanBus    + "\n" +
-                     " Jumlah Beli\t\t: "   + jumlahBeli    + "\n" +
-                     " Total Harga\t\t: "   + hargaTotal    + "\n" +
-                     " Uang Bayar\t\t: "    + uangBayar     + "\n" +
-                     " Kembalian\t\t: "     + kembalianStr;
+        String invoice = """
+                         ==================================== INVOICE ====================================
+                          Kode Tiket\t\t: """   + kodeTiket     + "\n" +
+                        " Nomor Kursi\t\t: "    + nomorKursi    + "\n" +
+                        " Nama Penumpang\t: "   + namaPenumpang + "\n" +
+                        " Jenis Bus\t\t: "      + jenisBus      + "\n" +
+                        " Jurusan\t\t: "        + jurusanBus    + "\n" +
+                        " Jumlah Beli\t\t: "    + jumlahBeli    + "\n" +
+                        " Total Harga\t\t: "    + hargaTotal    + "\n" +
+                        " Uang Bayar\t\t: "     + uangBayar     + "\n" +
+                        " Kembalian\t\t: "      + kembalianStr;
 
         // Atur teks di txt_output dengan invoice
         txt_output.setText(invoice);
-
-        // Reset field input
-        //nomor.setText("");
-        //nama.setText("");
-        //jenis.setSelectedIndex(0);
-        //jurusan.setSelectedIndex(0);
-        //jumbel.setText("");
-        //txt_harga.setText("");
         txt_hargatotal.setText(hargaTotal);
         txt_bayar.setText(uangBayar);
         kembalian.setText(kembalianStr);
     }//GEN-LAST:event_btn_bayarActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-        System.exit(0);
-    }//GEN-LAST:event_jButton2ActionPerformed
+    private void btnexitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnexitActionPerformed
+        int confirm = JOptionPane.showConfirmDialog(this, "Tutup Program?", "Konfirmasi", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {   
+            System.exit(0);
+        }
+        else 
+        {
+        return;
+        }
+    }//GEN-LAST:event_btnexitActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+    private void inputlagiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inputlagiActionPerformed
+        //Reset field input
+        nama.setText("");
+        jenis.setSelectedIndex(0);
+        jurusan.setSelectedIndex(0);
+        jumbel.setText("");
+        txt_harga.setText("");
+        txt_hargatotal.setText("");
+        txt_bayar.setText("");
+        kembalian.setText("");
+        nomor.setSelectedIndex(0);
+    }//GEN-LAST:event_inputlagiActionPerformed
 
     private void txt_hargatotalKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txt_hargatotalKeyPressed
-        // TODO add your handling code here:
-        if (!jumbel.getText().isEmpty()) {
-        int beli = Integer.parseInt(jumbel.getText()); // Mendapatkan jumlah beli dari input
-        int hargaPerTiket = Integer.parseInt(txt_harga.getText().replace("Rp. ", "").replace(".", "")); // Mendapatkan harga per tiket dan menghapus format
-        int total = hargaPerTiket * beli; // Menghitung total harga
-        txt_hargatotal.setText(String.format("Rp. %,d", total));
-        }
     }//GEN-LAST:event_txt_hargatotalKeyPressed
+
+    private void inputjumbelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inputjumbelActionPerformed
+        int beli = Integer.parseInt(jumbel.getText()); // Mendapatkan jumlah beli dari input
+        String hargaStr = txt_harga.getText().replace("Rp. ", "").replace(".", ""); // Menghapus "Rp." dan tanda titik
+        int hargaPerTiket = Integer.parseInt(hargaStr.replace(",", "")); // Mendapatkan harga per tiket dan menghapus koma
+        int total = hargaPerTiket * beli; // Menghitung total harga
+        txt_hargatotal.setText(String.format("Rp. %,d", total)); // Menetapkan teks total dengan format uang yang sesuai
+    }//GEN-LAST:event_inputjumbelActionPerformed
+
+    private void nomorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nomorActionPerformed
+
+    }//GEN-LAST:event_nomorActionPerformed
+
+    private void jurusanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jurusanActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jurusanActionPerformed
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btn_bayar;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton btnexit;
+    private javax.swing.JButton inputjumbel;
+    private javax.swing.JButton inputlagi;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel26;
@@ -564,7 +572,7 @@ public class PenjualanTiketBus extends javax.swing.JPanel {
     private javax.swing.JComboBox<String> jurusan;
     private javax.swing.JTextField kembalian;
     private javax.swing.JTextField nama;
-    private javax.swing.JTextField nomor;
+    private javax.swing.JComboBox<String> nomor;
     private javax.swing.JTextField txt_bayar;
     private javax.swing.JTextField txt_harga;
     private javax.swing.JTextField txt_hargatotal;
